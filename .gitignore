@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+
+venv/
+.venv/
+
+# Django
+.env
+.env.*
+!.env.example
+
+staticfiles/
+media/
+
+# Node / Vue
+node_modules/
+dist/
+
+# Tests
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Docker
+*.log
+docker-data/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
