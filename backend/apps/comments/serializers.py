@@ -84,6 +84,22 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
         )
 
 
+class AttachmentReadSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attachment
+        fields = (
+            'id',
+            'type',
+            'original_name',
+            'url',
+        )
+
+    def get_url(self, obj: Attachment) -> str:
+        return obj.file.url
+
+
 class CommentCreateSerializer(serializers.ModelSerializer):
     files = serializers.ListField(
         child=serializers.FileField(),
@@ -133,6 +149,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
 class CommentReadSerializer(serializers.ModelSerializer):
     replies_count = serializers.IntegerField(read_only=True)
+    attachments_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Comment
@@ -144,6 +161,22 @@ class CommentReadSerializer(serializers.ModelSerializer):
             'home_page',
             'body',
             'created_at',
-            'replies_count'
+            'replies_count',
+            'attachments_count'
         )
 
+
+class CommentDetailSerializer(serializers.ModelSerializer):
+    attachments = AttachmentReadSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = (
+            'id',
+            'user_name',
+            'email',
+            'home_page',
+            'body',
+            'created_at',
+            'attachments',
+        )

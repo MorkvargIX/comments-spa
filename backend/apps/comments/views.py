@@ -6,6 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from apps.comments.models import Comment
 from apps.comments.serializers import (
     CommentCreateSerializer,
+    CommentDetailSerializer,
     CommentReadSerializer
 )
 from apps.comments.pagination import CommentPagination, ReplyPagination
@@ -24,21 +25,26 @@ class CommentViewSet(ModelViewSet):
     ordering = ('-created_at',)
 
     def get_queryset(self):
-        return (
+        qs = (
             Comment.objects.filter(parent__isnull=True)
-            .annotate(replies_count=Count('replies'))
+            .annotate(replies_count=Count('replies'), attachments_count=Count('attachments'))
         )
+        if self.action == 'retrieve':
+            qs.prefetch_related('attachments')
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'create':
             return CommentCreateSerializer
+        if self.action == 'retrieve':
+            return CommentDetailSerializer
         return CommentReadSerializer
 
     @action(detail=True, methods=['get'], pagination_class=ReplyPagination)
     def replies(self, request, pk=None):
         queryset = (
             Comment.objects.filter(parent_id=pk).
-            annotate(replies_count=Count('replies')).
+            annotate(replies_count=Count('replies'), attachments_count=Count('attachments')).
             order_by('created_at')
         )
 
