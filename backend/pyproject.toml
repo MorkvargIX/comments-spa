@@ -11,7 +11,8 @@ dependencies = [
     "djangorestframework (==3.14.*)",
     "daphne (>=4.2.1,<5.0.0)",
     "bleach (==6.2.0)",
-    "pillow (<12)"
+    "pillow (<12)",
+    "channels (<4.3.2)"
 ]
 
 [tool.poetry]
