@@ -37,7 +37,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
 
 class CommentReadSerializer(serializers.ModelSerializer):
-    replies = serializers.SerializerMethodField()
+    replies_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Comment
@@ -49,8 +49,6 @@ class CommentReadSerializer(serializers.ModelSerializer):
             'home_page',
             'body',
             'created_at',
-            'replies'
+            'replies_count'
         )
 
-    def get_replies(self, obj: Comment) -> list:
-        return CommentReadSerializer(obj.replies.all(), many=True).data
