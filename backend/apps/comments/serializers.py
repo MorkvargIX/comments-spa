@@ -85,7 +85,11 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(required=False, write_only=True)
+    files = serializers.ListField(
+        child=serializers.FileField(),
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model = Comment
@@ -95,7 +99,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             'home_page',
             'body',
             'parent',
-            'file',
+            'files',
         )
 
     def validate_body(self, value: str) -> str:
@@ -112,10 +116,11 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data: Dict[str, Any]) -> Comment:
-        uploaded_file = validated_data.pop('file', None)
+        uploaded_files = validated_data.pop('files', [])
 
         comment = Comment.objects.create(**validated_data)
-        if uploaded_file:
+
+        for uploaded_file in uploaded_files:
             attachment_serializer = AttachmentCreateSerializer(
                 data={'file': uploaded_file},
                 context={'comment': comment},
