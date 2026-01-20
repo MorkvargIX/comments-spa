@@ -6,6 +6,7 @@ from apps.core.models.mixins import AuditMixin
 class Comment(AuditMixin):
     user_name = models.CharField(max_length=255)
     email = models.EmailField()
+    home_page = models.URLField(blank=True)
     body = models.TextField()
 
     parent = models.ForeignKey(
