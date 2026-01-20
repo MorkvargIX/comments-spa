@@ -1,5 +1,3 @@
-from typing import Union
-
 import bleach
 from rest_framework import serializers
 from apps.comments.models import Comment
@@ -41,7 +39,7 @@ class CommentReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        read_only_fields = ("id", "created_at")
+        read_only_fields = ('id', 'created_at')
         fields = (
             'id',
             'user_name',
