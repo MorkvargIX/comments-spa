@@ -1,4 +1,8 @@
+from typing import Dict, Any
+
 import bleach
+from django.db import transaction
+from django.core.files.uploadedfile import UploadedFile
 from rest_framework import serializers
 from PIL import Image
 
@@ -27,7 +31,7 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
         model = Attachment
         fields = ('file',)
 
-    def validate_file(self, file):
+    def validate_file(self, file: UploadedFile) -> UploadedFile:
         filename = file.name.lower()
         content_type = file.content_type
         size = file.size
@@ -69,7 +73,7 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
 
         raise serializers.ValidationError('Unsupported file type.')
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict[str, Any]) -> Attachment:
         file = validated_data['file']
 
         return Attachment.objects.create(
@@ -81,15 +85,17 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(required=False, write_only=True)
+
     class Meta:
         model = Comment
         fields = (
-            'id',
             'user_name',
             'email',
             'home_page',
             'body',
             'parent',
+            'file',
         )
 
     def validate_body(self, value: str) -> str:
@@ -103,6 +109,21 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             attributes=ALLOWED_ATTRIBUTES,
             strip=True,
         )
+
+    @transaction.atomic
+    def create(self, validated_data: Dict[str, Any]) -> Comment:
+        uploaded_file = validated_data.pop('file', None)
+
+        comment = Comment.objects.create(**validated_data)
+        if uploaded_file:
+            attachment_serializer = AttachmentCreateSerializer(
+                data={'file': uploaded_file},
+                context={'comment': comment},
+            )
+            attachment_serializer.is_valid(raise_exception=True)
+            attachment_serializer.save()
+
+        return comment
 
 
 class CommentReadSerializer(serializers.ModelSerializer):
