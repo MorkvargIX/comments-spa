@@ -19,7 +19,7 @@ class Comment(AuditMixin):
     )
 
     class Meta:
-        ordering = ('-created',)
+        ordering = ('-created_at',)
 
     def __str__(self) -> str:
         return f"Comment #{self.id} by {self.user_name}"
