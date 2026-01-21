@@ -13,7 +13,6 @@ venv/
 
 staticfiles/
 media/
-migrations/
 db.sqlite3
 
 # Node / Vue
