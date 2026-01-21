@@ -1,7 +1,10 @@
 from django.db.models import Count
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from apps.comments.models import Comment
 from apps.comments.serializers import (
@@ -10,6 +13,11 @@ from apps.comments.serializers import (
     CommentReadSerializer
 )
 from apps.comments.pagination import CommentPagination, ReplyPagination
+from apps.comments.services import (
+    generate_captcha_text,
+    generate_captcha_image,
+    store_captcha,
+)
 
 
 class CommentViewSet(ModelViewSet):
@@ -51,3 +59,21 @@ class CommentViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         serializer = CommentReadSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
+
+
+class CaptchaView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        text = generate_captcha_text()
+        captcha_id = store_captcha(text)
+        image = generate_captcha_image(text)
+
+        return Response(
+            {
+                'captcha_id': captcha_id,
+                'image': image,  # base64
+            },
+            status=status.HTTP_200_OK,
+        )

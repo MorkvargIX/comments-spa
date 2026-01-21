@@ -13,7 +13,8 @@ dependencies = [
     "bleach (==6.2.0)",
     "pillow (<12)",
     "channels (<4.3.2)",
-    "channels-redis (<4.2.2)"
+    "channels-redis (<4.2.2)",
+    "django-redis (<6.0.0)"
 ]
 
 [tool.poetry]

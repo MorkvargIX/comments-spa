@@ -8,6 +8,7 @@ from PIL import Image
 
 from apps.comments.models import Attachment, Comment
 from apps.comments.services import broadcast_comment_created
+from apps.comments.services import validate_captcha
 
 
 ALLOWED_TAGS = {'a', 'code', 'i', 'strong'}
@@ -102,6 +103,9 @@ class AttachmentReadSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
+    captcha_id = serializers.CharField(write_only=True)
+    captcha_value = serializers.CharField(write_only=True)
+
     files = serializers.ListField(
         child=serializers.FileField(),
         required=False,
@@ -117,7 +121,16 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             'body',
             'parent',
             'files',
+            'captcha_id',
+            'captcha_value',
         )
+
+    def validate(self, attrs):
+        validate_captcha(
+            captcha_id=attrs.pop('captcha_id'),
+            captcha_value=attrs.pop('captcha_value'),
+        )
+        return attrs
 
     def validate_body(self, value: str) -> str:
         """
