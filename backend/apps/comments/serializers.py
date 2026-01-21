@@ -7,6 +7,7 @@ from rest_framework import serializers
 from PIL import Image
 
 from apps.comments.models import Attachment, Comment
+from apps.comments.services import broadcast_comment_created
 
 
 ALLOWED_TAGS = {'a', 'code', 'i', 'strong'}
@@ -144,6 +145,8 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             attachment_serializer.is_valid(raise_exception=True)
             attachment_serializer.save()
 
+        # WebSocket broadcast (after successful DB + files save)
+        broadcast_comment_created(comment)
         return comment
 
 
