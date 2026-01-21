@@ -4,26 +4,10 @@ import bleach
 from django.db import transaction
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework import serializers
-from PIL import Image
 
+from apps.comments.constants import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 from apps.comments.models import Attachment, Comment
-from apps.comments.services import broadcast_comment_created
-from apps.comments.services import validate_captcha
-
-
-ALLOWED_TAGS = {'a', 'code', 'i', 'strong'}
-ALLOWED_ATTRIBUTES = {
-    'a': ['href', 'title'],
-}
-
-MAX_TXT_SIZE = 100 * 1024  # 100 KB
-MAX_IMAGE_SIZE = (320, 240)
-
-IMAGE_EXTENSIONS = ('jpg', 'jpeg', 'png', 'gif')
-IMAGE_MIME_TYPES = ('image/jpeg', 'image/png', 'image/gif')
-
-TEXT_EXTENSIONS = ('txt',)
-TEXT_MIME_TYPES = ('text/plain',)
+from apps.comments.services import broadcast_comment_created, validate_captcha, process_uploaded_file
 
 
 class AttachmentCreateSerializer(serializers.ModelSerializer):
@@ -34,46 +18,9 @@ class AttachmentCreateSerializer(serializers.ModelSerializer):
         fields = ('file',)
 
     def validate_file(self, file: UploadedFile) -> UploadedFile:
-        filename = file.name.lower()
-        content_type = file.content_type
-        size = file.size
-
-        extension = filename.split('.')[-1]
-
-        if extension in TEXT_EXTENSIONS:
-            if content_type not in TEXT_MIME_TYPES:
-                raise serializers.ValidationError('Invalid text file type.')
-            if size > MAX_TXT_SIZE:
-                raise serializers.ValidationError('Text file is too large.')
-
-            self._attachment_type = Attachment.AttachmentType.TEXT
-            return file
-
-        if extension in IMAGE_EXTENSIONS:
-            if content_type not in IMAGE_MIME_TYPES:
-                raise serializers.ValidationError('Invalid image file type.')
-
-            try:
-                image = Image.open(file)
-                image.verify() # verifies image integrity; requires reopening file for further processing
-            except Exception as e:
-                raise serializers.ValidationError('Invalid image file.')
-
-            file.seek(0)
-
-            image = Image.open(file)
-            if image.width > MAX_IMAGE_SIZE[0] or image.height > MAX_IMAGE_SIZE[1]:
-                image.thumbnail(MAX_IMAGE_SIZE)
-
-                image_format = image.format or 'JPEG'
-                image.save(file, format=image_format)
-
-                file.seek(0)
-
-            self._attachment_type = Attachment.AttachmentType.IMAGE
-            return file
-
-        raise serializers.ValidationError('Unsupported file type.')
+        processed_file, attachment_type = process_uploaded_file(file)
+        self._attachment_type = attachment_type
+        return processed_file
 
     def create(self, validated_data: Dict[str, Any]) -> Attachment:
         file = validated_data['file']
