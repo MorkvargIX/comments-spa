@@ -1,20 +1,17 @@
 <script setup>
 import CommentList from './components/CommentList.vue'
-import CommentForm from './components/CommentForm.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <div class="max-w-3xl mx-auto py-8 px-4">
-      <h1 class="text-2xl font-bold mb-6">
-        Comments
+  <div class="min-h-screen">
+    <header class="bg-white shadow p-4 mb-6">
+      <h1 class="text-xl font-bold">
+        Comments SPA
       </h1>
+    </header>
 
-      <CommentForm />
-
-      <div class="mt-8">
-        <CommentList />
-      </div>
-    </div>
+    <main class="max-w-3xl mx-auto px-4">
+      <CommentList />
+    </main>
   </div>
 </template>

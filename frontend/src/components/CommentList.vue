@@ -1,10 +1,32 @@
 <script setup>
+import CommentItem from './CommentItem.vue'
+
+const comments = [
+  {
+    id: 1,
+    user_name: 'Maksim',
+    email: 'maksim@example.com',
+    body: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at dignissimos eum incidunt laborum laudantium officiis qui sunt! A alias at nisi quas vitae? Ab ad aliquam, atque aut autem beatae doloribus eligendi eveniet expedita fugit hic molestiae nihil numquam officiis perferendis porro qui repellat repellendus repudiandae sequi similique sit vel velit. Atque ipsum magni maiores minus nostrum quis quisquam sit, voluptas! A, alias aliquid amet architecto beatae blanditiis culpa deleniti doloremque dolores eaque eius eligendi ex explicabo facilis harum ipsum iste laboriosam magnam mollitia neque nisi nostrum officiis perferendis perspiciatis provident quia quisquam soluta tempore unde vitae! A, optio, recusandae! Amet aperiam at cupiditate deleniti dignissimos dolor doloremque dolores ea eveniet ex facere hic illo illum ipsum molestiae nobis non odit pariatur quia quidem quo repudiandae sint suscipit temporibus, veritatis. Accusantium aliquam beatae commodi deserunt dicta, distinctio dolor doloremque dolorum eius eligendi eveniet expedita harum inventore ipsam molestiae nemo officia officiis, quam, quia quos repellendus repudiandae sequi? Accusantium aliquid aspernatur at beatae corporis debitis delectus deserunt dignissimos dolore, enim eos exercitationem explicabo facilis harum impedit incidunt laboriosam maxime modi molestias mollitia nam neque nisi nobis odio officia optio praesentium quasi qui quos ratione repudiandae sequi temporibus, unde vel vitae voluptas voluptate? A aperiam assumenda atque consequuntur culpa dolorum ducimus eius eligendi et eveniet illo incidunt magnam magni maxime minus necessitatibus non numquam odio omnis pariatur, perferendis porro possimus quos rem, tempora totam vel veniam. A aliquam architecto at autem, beatae consectetur ducimus ea eligendi ex impedit in iste laboriosam maiores modi molestias nihil nisi officiis omnis quidem quod quos repellat repudiandae sapiente, similique sit soluta sunt tempora temporibus ullam unde veniam vitae voluptas voluptatem! Culpa dolor ducimus harum! Doloremque nisi perferendis ut voluptate. A, aut cupiditate delectus eaque fugiat illum ipsum libero maxime numquam pariatur quod totam, unde voluptatem?',
+    replies_count: 10,
+    created_at: '2026-01-23',
+  },
+  {
+    id: 2,
+    user_name: 'Anon',
+    email: 'anon@example.com',
+    body: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus at dignissimos eum incidunt laborum laudantium officiis qui sunt! A alias at nisi quas vitae? Ab ad aliquam, atque aut autem beatae doloribus eligendi eveniet expedita fugit hic molestiae nihil numquam officiis perferendis porro qui repellat repellendus repudiandae sequi similique sit vel velit. Atque ipsum magni maiores minus nostrum quis quisquam sit, voluptas! A, alias aliquid amet architecto beatae blanditiis culpa deleniti doloremque dolores eaque eius eligendi ex explicabo facilis harum ipsum iste laboriosam magnam mollitia neque nisi nostrum officiis perferendis perspiciatis provident quia quisquam soluta tempore unde vitae! A, optio, recusandae! Amet aperiam at cupiditate deleniti dignissimos dolor doloremque dolores ea eveniet ex facere hic illo illum ipsum molestiae nobis non odit pariatur quia quidem quo repudiandae sint suscipit temporibus, veritatis. Accusantium aliquam beatae commodi deserunt dicta, distinctio dolor doloremque dolorum eius eligendi eveniet expedita harum inventore ipsam molestiae nemo officia officiis, quam, quia quos repellendus repudiandae sequi? Accusantium aliquid aspernatur at beatae corporis debitis delectus deserunt dignissimos dolore, enim eos exercitationem explicabo facilis harum impedit incidunt laboriosam maxime modi molestias mollitia nam neque nisi nobis odio officia optio praesentium quasi qui quos ratione repudiandae sequi temporibus, unde vel vitae voluptas voluptate? A aperiam assumenda atque consequuntur culpa dolorum ducimus eius eligendi et eveniet illo incidunt magnam magni maxime minus necessitatibus non numquam odio omnis pariatur, perferendis porro possimus quos rem, tempora totam vel veniam. A aliquam architecto at autem, beatae consectetur ducimus ea eligendi ex impedit in iste laboriosam maiores modi molestias nihil nisi officiis omnis quidem quod quos repellat repudiandae sapiente, similique sit soluta sunt tempora temporibus ullam unde veniam vitae voluptas voluptatem! Culpa dolor ducimus harum! Doloremque nisi perferendis ut voluptate. A, aut cupiditate delectus eaque fugiat illum ipsum libero maxime numquam pariatur quod totam, unde voluptatem?',
+    replies_count: 5,
+    created_at: '2026-01-23',
+  },
+]
 </script>
 
 <template>
-  <div class="bg-white p-4 rounded shadow">
-    <p class="text-gray-500">
-      Comment form (placeholder)
-    </p>
+  <div class="space-y-4">
+    <CommentItem
+      v-for="comment in comments"
+      :key="comment.id"
+      :comment="comment"
+    />
   </div>
 </template>
