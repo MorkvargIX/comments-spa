@@ -28,6 +28,22 @@ const displayedText = computed(() => {
   }
   return props.comment.body.slice(0, MAX_LENGTH) + '…'
 })
+
+function formatDate(value) {
+  if (!value) return ''
+
+  const date = new Date(value)
+
+  const dd = String(date.getDate()).padStart(2, '0')
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const yy = String(date.getFullYear()).slice(-2)
+
+  const hh = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+
+  return `${dd}.${mm}.${yy} в ${hh}:${min}`
+}
+
 </script>
 
 
@@ -44,7 +60,7 @@ const displayedText = computed(() => {
         {{ toTitleCase(comment.user_name) }}
       </span>
       <span class="text-sm font-medium text-gray-400">
-        {{ comment.created_at }}
+        {{ formatDate(comment.created_at) }}
       </span>
     </div>
 
@@ -54,7 +70,7 @@ const displayedText = computed(() => {
       :class="expanded ? 'max-h-[9999px]' : 'max-h-24'"
     >
       <div
-        class="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap"
+        class="prose prose-sm max-w-none whitespace-pre-wrap"
         v-html="displayedText"
       />
     </div>
