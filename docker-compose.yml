@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    build: .
+    build: ./backend
     container_name: comments-backend
     command: >
       sh -c "
@@ -10,11 +10,9 @@ services:
       python manage.py collectstatic --noinput &&
       daphne -b 0.0.0.0 -p 8000 config.asgi:application
       "
-    ports:
-      - "8000:8000"
     volumes:
-      - .:/app
-      - static_volume:/app/staticfiles
+      - ./backend:/app/backend
+      - static:/app/backend/staticfiles
     depends_on:
       - postgres
       - redis
@@ -43,6 +41,17 @@ services:
     ports:
       - "6379:6379"
 
+  nginx:
+    build: ./nginx
+    container_name:
+      comments-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - static:/static
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
-  static_volume:
+  static:
