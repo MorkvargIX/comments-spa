@@ -65,14 +65,14 @@ const displayedText = computed(() => {
         @click="expanded = !expanded"
         class="cursor-pointer hover:text-gray-800 hover:underline select-none"
       >
-        {{ expanded ? 'Свернуть' : 'Развернуть' }}
+        {{ expanded ? 'Collapse' : 'Expand' }}
       </span>
 
       <span
         v-if="comment.replies_count > 0"
         class="cursor-pointer hover:text-gray-800 hover:underline"
       >
-        {{ comment.replies_count }} ответов
+        {{ comment.replies_count }} replies
       </span>
     </div>
   </div>
