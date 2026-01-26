@@ -9,6 +9,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.core.cache import cache
 from django.core.files.uploadedfile import UploadedFile
+from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont
 from rest_framework.exceptions import ValidationError
 
@@ -36,19 +37,40 @@ def generate_captcha_text(length: int = 5) -> str:
 
 
 def generate_captcha_image(text: str) -> str:
-    """
-    Generate captcha image and return it as base64 string.
-    """
-    image = Image.new("RGB", (150, 50), color=(255, 255, 255))
+    width, height = settings.CAPTCHA_IMAGE_SIZE
+    image = Image.new("RGB", (width, height))
+    for y in range(height):
+        for x in range(width):
+            image.putpixel(
+                (x, y),
+                (
+                    random.randint(200, 255),
+                    random.randint(200, 255),
+                    random.randint(200, 255))
+            )
     draw = ImageDraw.Draw(image)
 
-    font = ImageFont.load_default()
-    draw.text((20, 10), text, fill=(0, 0, 0), font=font)
+    font = ImageFont.truetype(
+        settings.CAPTCHA_FONT_PATH,
+        settings.CAPTCHA_FONT_SIZE
+    )
+
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_height = bbox[3] - bbox[1]
+
+    y = (height - text_height) // 2
+
+    total_text_width = sum(font.getlength(c) + 2 for c in text)
+    x_offset = (width - total_text_width) // 2
+    for char in text:
+        y_offset = random.randint(-5, 5)
+        draw.text((x_offset, y + y_offset), char, font=font, fill=(20, 20, 20))
+        x_offset += font.getlength(char) + 2
 
     buffer = BytesIO()
-    image.save(buffer, format='PNG')
+    image.save(buffer, format="PNG")
 
-    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+    return base64.b64encode(buffer.getvalue()).decode()
 
 
 def store_captcha(text: str, ttl: int = 300) -> str:

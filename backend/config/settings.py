@@ -135,3 +135,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CAPTCHA_FONT_PATH = BASE_DIR / "assets/fonts/dejavu-sans-bold.ttf"
+CAPTCHA_FONT_SIZE = 40
+CAPTCHA_IMAGE_SIZE = (200, 70)
