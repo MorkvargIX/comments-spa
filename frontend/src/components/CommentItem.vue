@@ -50,12 +50,13 @@ const displayedText = computed(() => {
 
     <!-- Body -->
     <div
-      class="overflow-hidden transition-all duration-1200 ease-in-out"
-      :class="expanded ? 'max-h-[9999px]' : 'max-h-18'"
+      class="overflow-hidden transition-all duration-300 ease-in-out"
+      :class="expanded ? 'max-h-[9999px]' : 'max-h-24'"
     >
-      <div class="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-line">
-        {{ displayedText }}
-      </div>
+      <div
+        class="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap"
+        v-html="displayedText"
+      />
     </div>
 
     <!-- Actions -->
