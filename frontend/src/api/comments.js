@@ -5,7 +5,7 @@ export function fetchComments (params = {}) {
 }
 
 export function createComment (data) {
-    return api.post('/comments/', { data })
+    return api.post('/comments/', data)
 }
 
 export function fetchReplies (commentId, params = {}) {

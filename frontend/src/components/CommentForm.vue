@@ -1,6 +1,6 @@
 <script setup>
-import {ref} from 'vue'
-
+import {ref, onMounted, computed} from 'vue'
+import {fetchCaptcha} from '../api/captcha'
 import {createComment} from "../api/comments.js";
 
 const props = defineProps({
@@ -14,11 +14,24 @@ const emit = defineEmits(['created'])
 
 const loading = ref(false)
 
+const captcha = ref({
+  id: null,
+  image: null,
+  value: '',
+})
+
 const form = ref({
   user_name: '',
   email: '',
   body: '',
 })
+
+async function loadCaptcha() {
+  const { data } = await fetchCaptcha()
+  captcha.value.id = data.captcha_id
+  captcha.value.image = data.image
+  captcha.value.value = ''
+}
 
 async function submit() {
   try {
@@ -27,6 +40,8 @@ async function submit() {
     const payload = {
       ...form.value,
       parent: props.parentId,
+      captcha_id: captcha.value.id,
+      captcha_value: captcha.value.value,
     }
 
     await createComment(payload)
@@ -38,12 +53,22 @@ async function submit() {
       email: '',
       body: '',
     }
+    await loadCaptcha()
   } catch (e) {
     console.error(e)
+    await loadCaptcha()
   } finally {
     loading.value = false
   }
 }
+
+const captchaSrc = computed(() =>
+  captcha.value.image
+    ? `data:image/png;base64,${captcha.value.image}`
+    : null
+)
+
+onMounted(loadCaptcha)
 </script>
 
 
@@ -82,10 +107,24 @@ async function submit() {
             required
         />
 
-        <!-- CAPTCHA пока заглушка -->
-        <div class="text-xs text-gray-400">
-          CAPTCHA will be there
+        <div class="flex items-center gap-3">
+          <img
+            v-if="captchaSrc"
+            :src="captchaSrc"
+            alt="captcha"
+             class="w-[160px] h-[60px] object-contain border rounded"
+          />
+
+          <input
+            v-model="captcha.value"
+            type="text"
+            placeholder="Enter captcha"
+            class="w-full rounded border border-gray-300 px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-gray-500"
+            required
+          />
         </div>
+
 
         <div class="flex justify-end">
           <button
