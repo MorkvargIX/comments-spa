@@ -14,7 +14,9 @@ dependencies = [
     "pillow (<12)",
     "channels (<4.3.2)",
     "channels-redis (<4.2.2)",
-    "django-redis (<6.0.0)"
+    "django-redis (<6.0.0)",
+    "django-cors-headers (<4.9.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)"
 ]
 
 [tool.poetry]
