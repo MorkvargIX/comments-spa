@@ -2,6 +2,7 @@
 import {ref, onMounted, nextTick, computed} from 'vue'
 import {fetchCaptcha} from '../api/captcha'
 import {createComment} from "../api/comments.js";
+import LightBox from "./LightBox.vue";
 
 const props = defineProps({
   parentId: {
@@ -11,6 +12,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['created'])
+
+const lightBox = ref({
+  open: false,
+  file: null
+})
 
 const loading = ref(false)
 const bodyRef = ref(null)
@@ -41,12 +47,36 @@ function handleFiles(event) {
   const selected = Array.from(event.target.files)
 
   selected.forEach(file => {
-    if (!files.value.find(f => f.name === file.name && f.size === file.size)) {
-      files.value.push(file)
+    const exists = files.value.find(
+      f => f.name === file.name && f.size === file.size
+    )
+    if (exists) return
+
+    const item = {
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      preview: URL.createObjectURL(file),
     }
+
+    if (file.type === 'text/plain') {
+      const reader = new FileReader()
+      reader.onload = e => {
+        item.text = e.target.result
+      }
+      reader.readAsText(file)
+    }
+
+    files.value.push(item)
   })
 
   event.target.value = ''
+}
+
+function openPreview(file) {
+  lightBox.value.file = file
+  lightBox.value.open = true
 }
 
 function removeFile(index) {
@@ -316,7 +346,8 @@ onMounted(loadCaptcha)
             <div
                 v-for="(file, index) in files"
                 :key="file.name + index"
-                class="flex justify-between items-center text-sm"
+                class="flex justify-between items-center text-sm cursor-pointer hover:bg-gray-100 px-1 rounded"
+                @click="openPreview(file)"
             >
             <span class="truncate">
               {{ file.name }} ({{ Math.round(file.size / 1024) }} KB)
@@ -368,4 +399,9 @@ onMounted(loadCaptcha)
       </div>
     </form>
   </div>
+  <LightBox
+    v-if="lightBox.open"
+    :file="lightBox.file"
+    @close="lightBox.open = false"
+  />
 </template>
