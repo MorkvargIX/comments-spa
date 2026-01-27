@@ -10,7 +10,7 @@ venv/
 .env
 .env.*
 !.env.example
-
+attachments/
 staticfiles/
 media/
 db.sqlite3

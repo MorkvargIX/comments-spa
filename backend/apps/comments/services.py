@@ -8,7 +8,7 @@ import uuid
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.core.cache import cache
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadedfile import UploadedFile, InMemoryUploadedFile
 from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont
 from rest_framework.exceptions import ValidationError
@@ -145,11 +145,24 @@ def process_uploaded_file(
         file.seek(0)
         image = Image.open(file)
 
+        # Pillow safety
+        image = image.convert("RGB")
+
         if image.width > MAX_IMAGE_SIZE[0] or image.height > MAX_IMAGE_SIZE[1]:
             image.thumbnail(MAX_IMAGE_SIZE)
-            image_format = image.format or "JPEG"
-            image.save(file, format=image_format)
-            file.seek(0)
+
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=85)
+        buffer.seek(0)
+
+        file = InMemoryUploadedFile(
+            buffer,
+            field_name="file",
+            name=file.name.rsplit(".", 1)[0] + ".jpg",
+            content_type="image/jpeg",
+            size=len(buffer.getvalue()),
+            charset=None
+        )
 
         return file, Attachment.AttachmentType.IMAGE
 
