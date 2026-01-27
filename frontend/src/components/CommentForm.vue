@@ -19,6 +19,8 @@ const captcha = ref({
   image: null,
   value: '',
 })
+const files = ref([])
+const fileInput = ref(null)
 
 const form = ref({
   user_name: '',
@@ -31,8 +33,25 @@ const errors = ref({
   email: null,
   body: null,
   captcha: null,
+  file: null,
   non_field_errors: null,
 })
+
+function handleFiles(event) {
+  const selected = Array.from(event.target.files)
+
+  selected.forEach(file => {
+    if (!files.value.find(f => f.name === file.name && f.size === file.size)) {
+      files.value.push(file)
+    }
+  })
+
+  event.target.value = ''
+}
+
+function removeFile(index) {
+  files.value.splice(index, 1)
+}
 
 async function loadCaptcha() {
   const {data} = await fetchCaptcha()
@@ -41,9 +60,23 @@ async function loadCaptcha() {
   captcha.value.value = ''
 }
 
+function resetForm() {
+  form.value = {
+    user_name: '',
+    email: '',
+    body: '',
+  }
+
+  files.value = []
+
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
 async function submit() {
   try {
-     Object.keys(errors.value).forEach(k => errors.value[k] = null)
+    Object.keys(errors.value).forEach(k => errors.value[k] = null)
 
     let hasError = false
 
@@ -71,22 +104,28 @@ async function submit() {
 
     loading.value = true
 
-    const payload = {
-      ...form.value,
-      parent: props.parentId,
-      captcha_id: captcha.value.id,
-      captcha_value: captcha.value.value,
+    const formData = new FormData()
+
+    formData.append('user_name', form.value.user_name)
+    formData.append('email', form.value.email)
+    formData.append('body', form.value.body)
+
+    if (props.parentId) {
+      formData.append('parent', props.parentId)
     }
 
-    await createComment(payload)
+    formData.append('captcha_id', captcha.value.id)
+    formData.append('captcha_value', captcha.value.value)
+
+    files.value.forEach(file => {
+      formData.append('files', file)
+    })
+
+    await createComment(formData)
 
     emit('created')
 
-    form.value = {
-      user_name: '',
-      email: '',
-      body: '',
-    }
+    resetForm()
     await loadCaptcha()
   } catch (e) {
     if (e.response?.data) {
@@ -157,7 +196,6 @@ const captchaSrc = computed(() =>
         ? `data:image/png;base64,${captcha.value.image}`
         : null
 )
-
 onMounted(loadCaptcha)
 </script>
 
@@ -244,6 +282,55 @@ onMounted(loadCaptcha)
         >
           <p class="font-semibold mb-1">Preview:</p>
           <div v-html="form.body"></div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-m font-medium text-gray-700">
+            Attach files
+          </label>
+
+          <input
+              ref="fileInput"
+              type="file"
+              id="files"
+              class="hidden"
+              multiple
+              @change="handleFiles"
+              :class="inputClass(errors.file)"
+          />
+          <p v-if="errors.file" class="text-xs text-red-500">
+            {{ errors.file }}
+          </p>
+
+          <label
+              for="files"
+              class="px-3 py-2 border rounded cursor-pointer hover:bg-gray-100 text-sm"
+          >
+            Browse files
+          </label>
+
+          <div
+              v-if="files.length"
+              class="border rounded p-2 bg-gray-50 space-y-1"
+          >
+            <div
+                v-for="(file, index) in files"
+                :key="file.name + index"
+                class="flex justify-between items-center text-sm"
+            >
+            <span class="truncate">
+              {{ file.name }} ({{ Math.round(file.size / 1024) }} KB)
+            </span>
+
+              <button
+                  type="button"
+                  class="text-red-500 hover:underline hover:cursor-pointer"
+                  @click="removeFile(index)"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="flex items-center gap-3">
