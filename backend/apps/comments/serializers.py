@@ -3,6 +3,8 @@ from typing import Dict, Any
 import bleach
 from django.db import transaction
 from django.core.files.uploadedfile import UploadedFile
+from django.conf import settings
+from django.urls import reverse
 from rest_framework import serializers
 
 from apps.comments.constants import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
@@ -45,8 +47,9 @@ class AttachmentReadSerializer(serializers.ModelSerializer):
             'url',
         )
 
-    def get_url(self, obj: Attachment) -> str:
-        return obj.file.url
+    def get_url(self, obj):
+        path = reverse('attachment-detail', args=[obj.id])
+        return f'{settings.SITE_URL}{path}'
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
@@ -113,6 +116,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 class CommentReadSerializer(serializers.ModelSerializer):
     replies_count = serializers.IntegerField(read_only=True)
     attachments_count = serializers.IntegerField(read_only=True)
+    attachments = AttachmentReadSerializer(many=True, read_only=True)
 
     class Meta:
         model = Comment
@@ -125,7 +129,8 @@ class CommentReadSerializer(serializers.ModelSerializer):
             'body',
             'created_at',
             'replies_count',
-            'attachments_count'
+            'attachments_count',
+            'attachments',
         )
 
 

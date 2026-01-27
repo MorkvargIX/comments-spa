@@ -1,4 +1,5 @@
 from django.db.models import Count
+from django.http import FileResponse, Http404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -6,7 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from apps.comments.models import Comment
+from apps.comments.models import Comment, Attachment
 from apps.comments.serializers import (
     CommentCreateSerializer,
     CommentDetailSerializer,
@@ -38,7 +39,7 @@ class CommentViewSet(ModelViewSet):
             .annotate(replies_count=Count('replies'), attachments_count=Count('attachments'))
         )
         if self.action == 'retrieve':
-            qs.prefetch_related('attachments')
+            qs = qs.prefetch_related('attachments')
         return qs
 
     def get_serializer_class(self):
@@ -76,4 +77,21 @@ class CaptchaView(APIView):
                 'image': image,  # base64
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class AttachmentDetailView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, pk):
+        try:
+            attachment = Attachment.objects.get(pk=pk)
+        except Attachment.DoesNotExist:
+            raise Http404
+
+        return FileResponse(
+            attachment.file.open('rb'),
+            as_attachment=False,
+            filename=attachment.original_name,
         )
