@@ -15,17 +15,18 @@ const emit = defineEmits(['close'])
       @click.self="emit('close')"
   >
     <div class="bg-white max-w-[90vw] max-h-[90vh] p-4 rounded shadow">
+
       <!-- IMAGE -->
       <img
-          v-if="file.type.startsWith('image/')"
-          :src="file.preview"
+          v-if="file.type === 'image'"
+          :src="file.src"
           class="max-w-full max-h-[80vh]"
       />
 
       <!-- TEXT -->
       <pre
-          v-else-if="file.type === 'text/plain'"
-          class="max-h-[80vh] overflow-auto text-sm whitespace-pre-wrap"
+        v-else-if="file.type === 'text'"
+        class="max-h-[80vh] overflow-auto text-sm whitespace-pre-wrap"
       >
         {{ file.text }}
       </pre>

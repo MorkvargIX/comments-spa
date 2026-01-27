@@ -2,6 +2,7 @@
 import {ref, computed} from 'vue'
 import avatar from '../assets/vue.svg'
 import CommentForm from './CommentForm.vue'
+import CommentAttachments from "./CommentAttachments.vue";
 import {fetchReplies} from "../api/comments.js";
 
 const props = defineProps({
@@ -141,6 +142,10 @@ async function toggleReplies() {
           v-html="displayedText"
       />
     </div>
+    <CommentAttachments
+      v-if="comment.attachments?.length"
+      :attachments="comment.attachments"
+    />
 
     <!-- Actions -->
     <div class="flex justify-between mt-2 text-xs text-gray-500">

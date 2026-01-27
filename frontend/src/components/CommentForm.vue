@@ -75,8 +75,28 @@ function handleFiles(event) {
 }
 
 function openPreview(file) {
-  lightBox.value.file = file
-  lightBox.value.open = true
+  if (file.type.startsWith('image/')) {
+    lightBox.value = {
+      open: true,
+      file: {
+        type: 'image',
+        src: file.preview,
+        name: file.name,
+      }
+    }
+    return
+  }
+
+  if (file.type === 'text/plain') {
+    lightBox.value = {
+      open: true,
+      file: {
+        type: 'text',
+        text: file.text,
+        name: file.name,
+      }
+    }
+  }
 }
 
 function removeFile(index) {
