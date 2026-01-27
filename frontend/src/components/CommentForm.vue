@@ -40,6 +40,7 @@ const errors = ref({
   body: null,
   captcha: null,
   file: null,
+  home_page: null,
   non_field_errors: null,
 })
 
@@ -267,6 +268,16 @@ onMounted(loadCaptcha)
         />
         <p v-if="errors.user_name" class="text-xs text-red-500">
           {{ errors.user_name }}
+        </p>
+        <input
+          v-model="form.home_page"
+          @focus="errors.home_page = null"
+          type="url"
+          placeholder="Home page (optional)"
+          :class="inputClass(errors.home_page)"
+        />
+        <p v-if="errors.home_page" class="text-xs text-red-500">
+          {{ errors.home_page }}
         </p>
 
         <input

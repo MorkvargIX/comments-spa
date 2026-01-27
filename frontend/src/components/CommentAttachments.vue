@@ -44,7 +44,7 @@ async function openAttachment(att) {
 </script>
 
 <template>
-  <div v-if="attachments.length" class="mt-3 space-y-2">
+  <div v-if="attachments.length" class="mt-3 flex flex-wrap gap-2">
     <div
       v-for="file in attachments"
       :key="file.id"
@@ -54,12 +54,9 @@ async function openAttachment(att) {
       <template v-if="file.type === 'IMAGE' || file.type === 'image'">
         <img
           :src="file.url"
-          class="w-20 h-16 object-cover rounded cursor-pointer border"
+          class="block w-20 h-16 object-cover rounded cursor-pointer border"
           @click="openAttachment(file)"
         />
-        <span class="truncate text-gray-600">
-          {{ file.original_name }}
-        </span>
       </template>
 
       <!-- TEXT -->
