@@ -18,6 +18,18 @@ services:
       - redis
     env_file:
       - .env
+    networks:
+      - backend-db
+      - backend-nginx
+      - backend-redis
+
+  frontend:
+    build: ./frontend
+    container_name: comments-frontend
+    volumes:
+      - frontend_dist:/shared/frontend
+    networks:
+      - frontend-nginx
 
   postgres:
     image: postgres:15
@@ -28,18 +40,20 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
     ports:
       - "5432:5432"
-
     env_file:
       - .env
+    networks:
+      - backend-db
 
   redis:
     image: redis:7
     container_name: comments-redis
     ports:
       - "6379:6379"
+    networks:
+      - backend-redis
 
   nginx:
     build: ./nginx
@@ -49,9 +63,28 @@ services:
       - "80:80"
     volumes:
       - static:/static
+      - frontend_dist:/frontend
     depends_on:
       - backend
+      - frontend
+    networks:
+      - backend-nginx
+      - frontend-nginx
 
 volumes:
   postgres_data:
   static:
+  frontend_dist:
+
+networks:
+  backend-db:
+    driver: bridge
+
+  backend-redis:
+    driver: bridge
+
+  backend-nginx:
+    driver: bridge
+
+  frontend-nginx:
+    driver: bridge

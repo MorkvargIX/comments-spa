@@ -168,8 +168,8 @@ async function submit() {
     formData.append('captcha_id', captcha.value.id)
     formData.append('captcha_value', captcha.value.value)
 
-    files.value.forEach(file => {
-      formData.append('files', file)
+    files.value.forEach(item => {
+      formData.append('files', item.file)
     })
 
     await createComment(formData)
