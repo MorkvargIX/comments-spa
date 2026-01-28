@@ -1,10 +1,12 @@
 # Comments SPA
 
-A backend service for a comment system with support for nested replies, file attachments, real-time updates via 
+## Backend
+
+A backend service for a comment system with support for nested replies, file attachments, real-time updates via
 WebSockets, and basic abuse protection.
 
-The project is intentionally implemented **without user authentication**, as no authorization flow was specified in 
-the requirements. The system is designed so that authentication and user-related logic can be added later without 
+The project is intentionally implemented **without user authentication**, as no authorization flow was specified in
+the requirements. The system is designed so that authentication and user-related logic can be added later without
 architectural changes.
 
 ---
@@ -17,8 +19,8 @@ architectural changes.
 * ORM queries are optimized to avoid N+1 problems using annotations and prefetching
 * File attachments:
 
-  * images (with validation and resizing)
-  * text files
+    * images (with validation and resizing)
+    * text files
 * CAPTCHA protection for comment creation
 * Real-time updates via WebSockets (ASGI)
 * HTML sanitization (XSS protection)
@@ -45,15 +47,15 @@ architectural changes.
 * CAPTCHA is used to limit automated spam.
 * Attachments are validated by:
 
-  * file extension
-  * MIME type
-  * file size
-  * actual content (images verified via Pillow)
+    * file extension
+    * MIME type
+    * file size
+    * actual content (images verified via Pillow)
 * Business logic (file processing, CAPTCHA, WebSocket broadcasting) is separated into a `services` module.
 * Redis is used for:
 
-  * CAPTCHA storage
-  * Channels communication layer
+    * CAPTCHA storage
+    * Channels communication layer
 * WebSocket events broadcast newly created comments to connected clients.
 
 ---
@@ -76,12 +78,163 @@ comments-spa/
 
 ---
 
-## Getting Started
-
-All backend-related commands must be executed from:
+## API Endpoints (brief)
 
 ```
-comments-spa/backend/
+- GET /comments/ — list root comments (paginated)
+- POST /comments/ — create comment (CAPTCHA required)
+- GET /comments/{id}/ — retrieve comment with attachments
+- GET /comments/{id}/replies/ — list replies for a comment (paginated)
+- GET /attachments/{id}/ — retrieve attachment content
+- GET /captcha/ — generate CAPTCHA
+- WS /ws/comments/ — real-time comment updates
+```
+
+---
+
+## Security Considerations
+
+* HTML input is sanitized to prevent XSS
+* SQL injection protection is provided by Django ORM
+* CAPTCHA protects comment creation endpoint
+* File uploads are strictly validated
+* No sensitive data is stored or logged
+
+---
+
+## Frontend
+
+The frontend is a single-page application (SPA) responsible for displaying comments, replies, attachments, and handling
+user interactions.
+
+## Features
+
+• Display paginated comments and nested replies
+• Create new comments and replies
+• Client-side validation with inline error display
+• File attachment upload with preview before submission:
+• image preview
+• text file preview
+• Attachment viewing via LightBox
+• Sorting and pagination controls
+• CAPTCHA support
+• HTML preview for formatted comment body
+• Integration with backend WebSocket events (ready for real-time updates)
+
+## Tech Stack
+
+* **Vue 3 (Composition API)**
+* **Vite** — build tool
+* **Axios** — HTTP client
+* **Tailwind CSS** — styling
+* **Docker** — production build
+
+Frontend Structure
+
+```
+frontend/
+├── src/
+│   ├── api/                # Axios instances and API calls
+│   ├── components/         # Reusable UI components
+│   │   ├── CommentItem.vue
+│   │   ├── CommentList.vue
+│   │   ├── CommentForm.vue
+│   │   ├── CommentAttachments.vue
+│   │   ├── CommentsFilter.vue
+│   │   ├── PaginationBar.vue
+│   │   ├── LightBox.vue
+│   ├── views/
+│   │   └── CommentsPage.vue
+│   ├── App.vue
+│   └── main.js
+├── index.html
+├── vite.config.js
+├── package.json
+├── package-lock.json
+└── Dockerfile
+```
+
+## Frontend Build
+
+The frontend is built in a dedicated Docker container and produces static assets.
+These assets are mounted into the Nginx container and served directly.
+
+---
+
+## Nginx
+
+Nginx acts as a reverse proxy and static file server.
+
+## Responsibilities
+
+• Serve frontend static assets
+• Proxy API requests to the backend
+• Proxy WebSocket connections
+• Serve Django static files
+• Enforce request size limits for file uploads
+
+## Routing
+
+```
+ • / — frontend SPA
+ • /api/ — backend REST API
+ • /ws/ — WebSocket connections
+ • /admin/ — Django admin pannel
+ • /static/ — Django static files
+```
+
+---
+
+## Docker & Docker Compose
+
+The project is fully containerized and can be started with a single command.
+
+## Services
+
+• frontend
+• Builds the Vue application
+• Outputs static files to a shared volume
+• backend
+• Django + DRF + Channels
+• Runs migrations and collects static files on startup
+• postgres
+• PostgreSQL database
+• redis
+• Used for CAPTCHA storage and Channels layer
+• nginx
+• Reverse proxy and static file server
+
+## Network Isolation
+
+Separate Docker bridge networks are used to limit service visibility:
+• backend ↔️ database
+• backend ↔️ redis
+• backend ↔️ nginx
+• frontend ↔️ nginx
+
+Each service can only communicate with the services it directly depends on.
+
+---
+
+## Environment Variables
+
+All configuration is handled via environment variables.
+• .env — required, contains actual configuration values
+• .env.example — example file with variable definitions
+
+The project will not start without a valid .env file.
+
+---
+
+## Getting Started
+
+The project is designed to be run using Docker and Docker Compose.
+
+Manual (non-Docker) setup is intentionally omitted to avoid environment inconsistencies
+and to ensure a reproducible startup process.
+
+```
+comments-spa/
 ```
 
 ---
@@ -104,53 +257,18 @@ docker compose up --build
 
 Backend will be available at:
 
-* **Admin panel**: [http://localhost:8000/admin/](http://localhost:8000/admin/)
-* **API**: [http://localhost:8000/](http://localhost:8000/)
+* **Admin panel**: [http://localhost/admin/](http://localhost/admin/)
+* **API**: [http://localhost/api/](http://localhost/api/)
 
 ---
 
-## Manual Setup (without Docker)
+### Admin access
 
-Requirements:
+To access Django admin panel, create a superuser:
 
-* Python **3.9.x**
-* pip **23.x**
-* PostgreSQL 15
-* Redis
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-
-pip install poetry
-poetry install
 ```
-
-Configure environment variables in `.env`, then run:
-
-```bash
-poetry run daphne -b 0.0.0.0 -p 8000 config.asgi:application
+  docker compose exec backend python manage.py createsuperuser
 ```
----
-
-## API Endpoints (brief)
-
-- `GET /comments/` — list root comments (paginated)
-- `POST /comments/` — create comment (CAPTCHA required)
-- `GET /comments/{id}/` — retrieve comment with attachments
-- `GET /comments/{id}/replies/` — list replies for a comment (paginated)
-- `GET /captcha/` — generate CAPTCHA
-- `WS /ws/comments/` — real-time comment updates
-
----
-
-## Security Considerations
-
-* HTML input is sanitized to prevent XSS
-* SQL injection protection is provided by Django ORM
-* CAPTCHA protects comment creation endpoint
-* File uploads are strictly validated
-* No sensitive data is stored or logged
 
 ---
 
